@@ -26,7 +26,7 @@ export default function App() {
   return (
     <main className='w-full min-h-screen flex flex-col'>
       <p className='w-full bg-[#373D35] text-center p-2 font-bold'>Registro de koders</p>
-      <form className='flex flex-row gap-2 justify-center p-5 text-black'
+      <form className='flex md:flex-row gap-2 justify-center p-5 text-black flex-col'
             onSubmit={handleSubmit(onSubmit)}
       >
         <input type="text"
