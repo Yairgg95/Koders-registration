@@ -32,7 +32,7 @@ export default function App() {
         <input type="text"
                placeholder='Nombre del koder'
                required
-               className={clsx("p-2 rounded-md w-full max-w-80", {
+               className={clsx("p-2 rounded-md w-full md:max-w-80", {
                 "border-2 border-red-500 bg-red-300" :errors.name
                })}
                {...register("name", {
@@ -44,7 +44,7 @@ export default function App() {
         <input type="text" 
                placeholder='Apellido del koder'
                required
-               className={clsx("p-2 rounded-md w-full max-w-80", {
+               className={clsx("p-2 rounded-md w-full md:max-w-80", {
                 "border-2 border-red-500 bg-red-300" : errors.lastname
                })}
                {...register("lastname", {
@@ -56,7 +56,7 @@ export default function App() {
         <input type="email"
                placeholder='Koder email'
                required
-               className={clsx("p-2 rounded-md w-full max-w-sm", {
+               className={clsx("p-2 rounded-md w-full md:max-w-sm", {
                 "border-2 border-red-500 bg-red-300" : errors.email
                })}
                {...register("email", {
