@@ -2,10 +2,19 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import clsx from "clsx"
 import { getKoders, createKoder ,deleteKoder } from './api'
+import { Toaster, toast } from 'sonner'
 
 
 export default function App() {
   const [koders, setKoders] = useState([])
+  
+  const {
+    register,
+    handleSubmit,
+    formState : { errors, isValid, isSubmitted},
+    reset,
+    setFocus
+  } = useForm()
 
 // useEffect recibe 2 parametros
   //1. una funcion
@@ -14,10 +23,8 @@ export default function App() {
 // useEffect se ejecuta en 2 momentos cuando el componente se monta o renderiza por primera vez 
 // cuando cambia alguna de sus dependencias
    useEffect(() => {
-    console.log("Hola desde useEffect");
     getKoders()
     .then((koders) => {
-      console.log("koders: ", koders)
       setKoders(koders)
     })
     .catch((error) => {
@@ -26,19 +33,7 @@ export default function App() {
     })
    }, [])
 
-  const {
-    register,
-    handleSubmit,
-    formState : { errors, isValid, isSubmitted},
-    reset,
-    setFocus
-  } = useForm()
   
-
-  function removeKoder(idxToRemove) {
-    const newKoders = koders.filter((koder, idx) => idx !== idxToRemove)
-    setKoders(newKoders)
-  }
 
   async function onSubmit(data) {
     try {
@@ -52,6 +47,7 @@ export default function App() {
       setKoders(kodersList);
       setFocus("firstName")
       reset()
+      toast.success("Koder creado")
     } catch (error) {
       console.error("Error al crear koders", error)
       alert("Error al crear koders");
@@ -61,13 +57,14 @@ export default function App() {
   function OnDelete(koderId) {
     deleteKoder(koderId)
     .then(() => {
+      toast.success("Koder eliminado")
       getKoders()
       .then((koders) => {
         setKoders(koders);
       })
       .catch((error) => {
         console.error("Error al obtener koders", error)
-        alert("Error al obtener koders");
+        toast.error("Error al obtener koders");
       })
     })
     .catch((error) => {
@@ -78,6 +75,7 @@ export default function App() {
 
   return (
     <main className='w-full min-h-screen flex flex-col'>
+      <Toaster position='top-right' richColors />
       <p className='w-full bg-[#373D35] text-center p-2 font-bold'>Registro de koders</p>
       <form className='flex md:flex-row gap-2 justify-center p-5 text-black flex-col'
             onSubmit={handleSubmit(onSubmit)}
