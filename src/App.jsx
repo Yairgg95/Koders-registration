@@ -1,26 +1,79 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import clsx from "clsx"
+import { getKoders, createKoder ,deleteKoder } from './api'
 
 
 export default function App() {
+  const [koders, setKoders] = useState([])
+
+// useEffect recibe 2 parametros
+  //1. una funcion
+//2. arreglo de dependencias
+// se utiliza para ejecutar codigo en partes especificas del ciclo de vida de un componente
+// useEffect se ejecuta en 2 momentos cuando el componente se monta o renderiza por primera vez 
+// cuando cambia alguna de sus dependencias
+   useEffect(() => {
+    console.log("Hola desde useEffect");
+    getKoders()
+    .then((koders) => {
+      console.log("koders: ", koders)
+      setKoders(koders)
+    })
+    .catch((error) => {
+      console.error("Error al obtener koders", error)
+      alert("Error al obtener koders");
+    })
+   }, [])
+
   const {
     register,
     handleSubmit,
     formState : { errors, isValid, isSubmitted},
-    reset
+    reset,
+    setFocus
   } = useForm()
-
-  const [koders, setKoders] = useState([])
+  
 
   function removeKoder(idxToRemove) {
     const newKoders = koders.filter((koder, idx) => idx !== idxToRemove)
     setKoders(newKoders)
   }
 
-  function onSubmit(data) {
-    setKoders([...koders, data ])
-    reset();
+  async function onSubmit(data) {
+    try {
+      await createKoder({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+      });
+  
+      const kodersList = await getKoders();
+      setKoders(kodersList);
+      setFocus("firstName")
+      reset()
+    } catch (error) {
+      console.error("Error al crear koders", error)
+      alert("Error al crear koders");
+    }
+  }
+
+  function OnDelete(koderId) {
+    deleteKoder(koderId)
+    .then(() => {
+      getKoders()
+      .then((koders) => {
+        setKoders(koders);
+      })
+      .catch((error) => {
+        console.error("Error al obtener koders", error)
+        alert("Error al obtener koders");
+      })
+    })
+    .catch((error) => {
+      console.error("Error al eliminar koders", error)
+      alert("Error al eliminar koders");
+    })
   }
 
   return (
@@ -33,9 +86,9 @@ export default function App() {
                placeholder='Nombre del koder'
                required
                className={clsx("p-2 rounded-md w-full md:max-w-80", {
-                "border-2 border-red-500 bg-red-300" :errors.name
+                "border-2 border-red-500 bg-red-300" :errors.firstName
                })}
-               {...register("name", {
+               {...register("firstName", {
                 required: {value: true, message: "Nombre requerido"},
                 minLength: {value: 3, message: "Minimo 3 caracteres"},
                 maxLength: {value: 45, message: "Maximo 45 caracteres"},
@@ -45,9 +98,9 @@ export default function App() {
                placeholder='Apellido del koder'
                required
                className={clsx("p-2 rounded-md w-full md:max-w-80", {
-                "border-2 border-red-500 bg-red-300" : errors.lastname
+                "border-2 border-red-500 bg-red-300" : errors.lastName
                })}
-               {...register("lastname", {
+               {...register("lastName", {
                 required: {value: true, message: "Apellido requerido"},
                 minLength: {value: 3, message: "Minimo 3 caracteres"},
                 maxLength: {value: 45, message: "Maximo 45 caracteres" }
@@ -68,16 +121,16 @@ export default function App() {
         <button className='px-3 rounded bg-white text-black disabled:bg-[#212720] disabled:text-white'
                 disabled={isSubmitted ? !isValid : false}>Agrega un Koder</button>
       </form>
-      {(errors.name || errors.lastname || errors.email) && (
+      {(errors.firstName || errors.lastName || errors.email) && (
         <div className='flex flex-row justify-center'>
-          {errors.name && (
+          {errors.firstName && (
         <p className='text-red-500 text-center text-sm font-semibold mx-4'>
-          {errors.name?.message}
+          {errors.firstName?.message}
         </p>
       )}
-      {errors.lastname && (
+      {errors.lastName && (
         <p className='text-red-500 text-center text-sm font-semibold mx-4'>
-          {errors.lastname?.message}
+          {errors.lastName?.message}
         </p>
       )}
       {errors.email && (
@@ -95,9 +148,9 @@ export default function App() {
           koders.map((koder, idx) => {
             return ( 
               <div key={`koder-${idx}`} className='bg-white/10 p-4 flex flex-row justify-between'>
-                <span className='select-none'>{`Koder: ${koder.name} ${koder.lastname}, email: ${koder.email}`}</span>
+                <span className='select-none'>{`${koder.firstName} ${koder.lastName} - ${koder.email}`}</span>
                 <span className='text-red-500 cursor-pointer hover:bg-red-500 hover:text-white rounded-full p-1 size-5 flex text-center items-center'
-                onClick={() => removeKoder(idx)}>x</span>
+                onClick={() => OnDelete(koder.id)}>x</span>
               </div>
             )
           })
